@@ -66,7 +66,7 @@
     el.hidden = !fields[el.getAttribute('data-if')];
   });
 
-  document.title = 'Thiệp mời cưới ' + details.groom.shortName + ' và ' + details.bride.shortName;
+  document.title = 'Thiệp đám cưới ' + details.groom.shortName + ' & ' + details.bride.shortName;
   byId('dear').textContent = details.groom.shortName + ' & ' + details.bride.shortName;
   byId('guest-line').textContent = guestName || 'Quý khách';
   byId('rsvp-name').value = guestName;
