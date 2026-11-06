@@ -1,5 +1,6 @@
 /* Champagne palette, sampled from the suit in the couple's photos.
-   The envelope opens into one long phone-width page of photo and paper sections. */
+   The envelope opens into one long page of photo and paper sections: a single
+   column on phones, and the whole screen on a computer. */
 :root {
   --ground: #F0E6DE;
   --ground-edge: #E6DBD4;
@@ -28,7 +29,8 @@
 * { box-sizing: border-box; }
 [hidden] { display: none !important; }
 
-html { scroll-behavior: smooth; }
+/* The gutter keeps the card still when a desktop scrollbar appears on opening. */
+html { scroll-behavior: smooth; scrollbar-gutter: stable; }
 body {
   margin: 0;
   background: var(--ground-edge);
@@ -46,6 +48,7 @@ a:focus-visible, button:focus-visible, input:focus-visible, textarea:focus-visib
 h1:focus, h2:focus, h3:focus { outline: none; }
 
 .defs { position: absolute; }
+picture { display: contents; }
 .phone {
   width: 100%;
   max-width: 430px;
@@ -806,6 +809,178 @@ textarea { padding: 10px 12px; resize: none; }
 .music-slash { position: absolute; display: none; }
 .music-toggle.is-off .music-slash { display: block; }
 .music-toggle.is-off .music-note { opacity: .75; }
+
+/* Computers and landscape tablets: the card fills the screen. Nothing in this
+   block reaches a phone, and the desktop photos are only downloaded here. */
+@media (min-width: 900px) {
+  .phone { max-width: none; }
+  .stage {
+    --env-w: min(480px, calc(var(--vh) * .64));
+    --card-w: 100vw;
+    /* Section backgrounds run edge to edge, and this keeps their content centred. */
+    --side: max(48px, calc((100% - 1320px) / 2));
+  }
+  @supports (width: 1cqw) {
+    .stage { container-type: inline-size; --card-w: 100cqw; }
+  }
+
+  /* The couple's photo, softened, sits behind the envelope. */
+  .stage::before {
+    content: "";
+    position: absolute;
+    inset: -30px;
+    background: linear-gradient(rgba(240, 230, 222, .76), rgba(240, 230, 222, .76)), url("photos/desktop-hero.jpg") center 20% / cover;
+    filter: blur(10px);
+    transition: opacity .6s ease;
+  }
+  .stage.is-open::before { opacity: 0; }
+  .stage.is-settled::before { display: none; }
+  .eyebrow { font-size: 13px; }
+  .dear { font-size: 46px; }
+  .hint { font-size: 15px; }
+  .seal {
+    top: calc(var(--env-top) + var(--flap-h) - 40px);
+    width: 72px;
+    height: 72px;
+    margin-left: -36px;
+  }
+
+  .card-inner {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    font-size: 17px;
+  }
+  .card-inner > section { grid-column: 1 / -1; min-width: 0; }
+  .card-inner > .calendar { grid-column: 1; }
+  .card-inner > .schedule { grid-column: 2; }
+  .sprig { width: 130px; height: 130px; }
+
+  .hero img { height: min(var(--vh), 72vw); object-position: center 16%; }
+  .hero-text { bottom: 44px; }
+  .hero-text .script { font-size: clamp(64px, 14vh, 112px); }
+  .hero-text h1 { font-size: 30px; letter-spacing: .08em; }
+  .hero-date { font-size: 24px; }
+
+  .quote { padding: 72px var(--side) 64px; gap: 20px; }
+  .quote h2 { font-size: 32px; }
+  .quote p { max-width: 640px; font-size: 19px; }
+
+  .couple {
+    padding: 0 var(--side) 72px;
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 32px;
+  }
+  .portrait .script { font-size: 46px; }
+  .portrait strong { font-size: 24px; }
+
+  /* Who is marrying on the left, the invitation to the guest on the right. */
+  .families {
+    padding: 16px var(--side) 80px;
+    display: grid;
+    grid-template-columns: minmax(0, 1.2fr) minmax(0, 1fr);
+    gap: 28px 80px;
+    align-items: center;
+  }
+  .family-grid, .notice, .full-names { grid-column: 1; }
+  .family-grid { gap: 24px; font-size: 16px; }
+  .family-grid h3 { font-size: 19px; }
+  .family-address { font-size: 14px; }
+  .notice { font-size: 18px; }
+  .full-names { font-size: 27px; }
+  .roles { font-size: 18px; }
+  .roles .script { font-size: 42px; }
+  .monogram {
+    grid-column: 2;
+    grid-row: 1 / span 2;
+    justify-self: center;
+    align-self: end;
+    width: 132px;
+    height: 132px;
+    font-size: 56px;
+  }
+  .invite { grid-column: 2; grid-row: 3; align-self: start; gap: 10px; font-size: 18px; }
+  .guest { min-width: 300px; font-size: 24px; }
+
+  .events { padding: 0 var(--side) 80px; gap: 36px; }
+  #event-list { display: grid; grid-auto-flow: column; grid-auto-columns: minmax(0, 1fr); }
+  .event { padding: 20px 40px; gap: 10px; }
+  .event + .event { border-top: 0; border-left: 1px dashed var(--gold-fill); }
+  .pill { font-size: 15px; }
+  .event-side { font-size: 20px; }
+  .event-stack { font-size: 52px; }
+  .lunar, .address, .event-label { font-size: 16px; }
+  .venue { font-size: 24px; }
+  .events > .button { width: 340px; }
+
+  .banner img, .closing img {
+    aspect-ratio: auto;
+    height: clamp(460px, 80vh, 900px);
+  }
+  .banner img { object-position: center 6%; }
+  .banner .script { right: 64px; bottom: 28px; font-size: 84px; }
+
+  .calendar {
+    padding: 64px 56px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+  }
+  .cal-year { font-size: 76px; }
+  .cal-month { font-size: 50px; }
+  .cal-grid, .countdown { width: min(100%, 480px); }
+  .cal-head { font-size: 13px; }
+  .cal-day { height: 42px; font-size: 16px; }
+  .countdown b { font-size: 42px; }
+  .countdown span { font-size: 14px; }
+
+  /* The text sits on the darker top, which leaves the couple clear below it. */
+  .schedule { display: flex; }
+  .schedule > img { object-position: center 18%; }
+  .schedule-text {
+    flex: 1;
+    min-height: 0;
+    padding: 48px 56px;
+    background: linear-gradient(rgba(45, 33, 27, .8) 42%, rgba(45, 33, 27, .12) 78%);
+  }
+  .schedule h2 { font-size: 64px; }
+  .schedule ol { margin-top: 36px; gap: 34px; }
+  .schedule li { grid-template-columns: 52px minmax(40px, 1fr) minmax(0, 240px); gap: 18px; }
+  .timeline-text b { font-size: 23px; }
+  .timeline-text span { font-size: 16px; }
+
+  .album { padding: 72px max(40px, calc((100% - 1500px) / 2)); }
+  .album h2 { font-size: 64px; }
+  .album-grid {
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+    gap: 12px;
+    margin-top: 28px;
+  }
+  .album-grid .wide { grid-column: span 2; height: 100%; min-height: 0; aspect-ratio: auto; }
+
+  .rsvp {
+    padding: 72px var(--side);
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 64px;
+    align-items: center;
+  }
+  .rsvp::before {
+    content: "";
+    align-self: stretch;
+    min-height: 560px;
+    border-radius: 14px;
+    background: url("photos/desktop-rsvp.jpg") center 30% / cover;
+    box-shadow: 0 8px 22px rgba(74, 58, 51, .18);
+  }
+  .rsvp .test-note { grid-column: 1 / -1; grid-row: 1; }
+  .section-head h2, .thanks h2 { font-size: 56px; }
+
+  .thank-note { padding: 0 var(--side) 64px; font-size: 19px; }
+  .closing .script { bottom: 32px; font-size: 62px; }
+
+  .music-toggle { right: 24px; bottom: 24px; }
+}
 
 @media (prefers-reduced-motion: reduce) {
   html { scroll-behavior: auto; }
