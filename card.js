@@ -354,6 +354,87 @@
     }
   });
 
+  /* ---------- Automatic scrolling ---------- */
+
+  var AUTO_SCROLL_DELAY_MS = 500;
+  var AUTO_SCROLL_RESUME_MS = 4000;
+  var AUTO_SCROLL_SPEED = 70; // pixels per second
+  var FORM_MARGIN = 40;
+  var TAKEOVER_EVENTS = ['wheel', 'touchstart', 'pointerdown', 'keydown'];
+
+  // Once the letter is open the page glides down to the reply form and stops
+  // there, so guests can use it. A touch, wheel, key or click only pauses it:
+  // it carries on from the new place once the guest has been still for a while.
+  function startAutoScroll() {
+    if (reducedMotion) {
+      return;
+    }
+    var position = 0;
+    var lastTime = null;
+    var frame = null;
+    var resumeTimer = null;
+
+    function formTop() {
+      return byId('rsvp').getBoundingClientRect().top + window.scrollY;
+    }
+
+    function finish() {
+      cancelAnimationFrame(frame);
+      clearTimeout(resumeTimer);
+      TAKEOVER_EVENTS.forEach(function (name) {
+        window.removeEventListener(name, pause);
+      });
+    }
+
+    function resumeAfter(delay) {
+      cancelAnimationFrame(frame);
+      clearTimeout(resumeTimer);
+      resumeTimer = setTimeout(resume, delay);
+    }
+
+    function pause(event) {
+      // The music button is a separate control, so the page keeps moving.
+      if (!event || !musicToggle.contains(event.target)) {
+        resumeAfter(AUTO_SCROLL_RESUME_MS);
+      }
+    }
+
+    function resume() {
+      // A guest who has reached the form, or started replying, is left alone.
+      if (window.scrollY >= formTop() - FORM_MARGIN || byId('rsvp').contains(document.activeElement)) {
+        finish();
+        return;
+      }
+      position = window.scrollY;
+      lastTime = null;
+      frame = requestAnimationFrame(step);
+    }
+
+    function step(time) {
+      // Something else moved the page, such as a scrollbar drag or a link.
+      if (Math.abs(window.scrollY - position) > FORM_MARGIN) {
+        pause();
+        return;
+      }
+      // The limit stops a jump when the guest returns from another app.
+      var elapsed = lastTime === null ? 0 : Math.min(time - lastTime, 50);
+      lastTime = time;
+      var target = formTop();
+      position = Math.min(position + AUTO_SCROLL_SPEED * elapsed / 1000, target);
+      window.scrollTo({ top: position, behavior: 'instant' });
+      if (position >= target) {
+        finish();
+        return;
+      }
+      frame = requestAnimationFrame(step);
+    }
+
+    TAKEOVER_EVENTS.forEach(function (name) {
+      window.addEventListener(name, pause, { passive: true });
+    });
+    resumeAfter(AUTO_SCROLL_DELAY_MS);
+  }
+
   /* ---------- Envelope ---------- */
 
   var stage = byId('view-card');
@@ -371,6 +452,7 @@
       startReveal();
       revealMusic();
       card.querySelector('h1').focus({ preventScroll: true });
+      startAutoScroll();
     }, OPEN_MS);
   });
 
